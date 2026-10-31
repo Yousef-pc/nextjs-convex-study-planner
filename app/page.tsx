@@ -14,7 +14,7 @@ const Home = () => {
 
           <div className="flex gap-3">
             <Link
-              href="/auth/sing-up"
+              href="/auth/sign-up"
               className={buttonVariants({ variant: "default" })}
             >
               Sign up

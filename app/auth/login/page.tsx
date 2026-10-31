@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
-export default function SignUp() {
+export default function Login() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -21,7 +21,7 @@ export default function SignUp() {
           Enter your email below to login to your account
         </CardDescription>
         <CardAction>
-          <Link href="/auth/sing-up" className={buttonVariants({ variant: "link" })}>Sign up</Link>
+          <Link href="/auth/sign-up" className={buttonVariants({ variant: "link" })}>Sign up</Link>
         </CardAction>
       </CardHeader>
       <CardContent>
