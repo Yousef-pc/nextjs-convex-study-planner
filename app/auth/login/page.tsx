@@ -50,6 +50,7 @@ export default function Login() {
 
         toast.add({ type: "success", description: "Logged in successfully!" });
         router.push("/dashboard");
+        router.refresh();
       } catch (err) {
         toast.add({
           type: "error",
@@ -76,7 +77,7 @@ export default function Login() {
           </Link>
         </CardAction>
       </CardHeader>
-      
+
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-6">

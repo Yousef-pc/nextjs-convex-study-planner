@@ -56,6 +56,7 @@ export default function SignUp() {
 
         toast.add({ type: "success", description: "Account created!" });
         router.push("/dashboard");
+        router.refresh();
       } catch (err) {
         toast.add({
           type: "error",
