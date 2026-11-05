@@ -1,4 +1,5 @@
 import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
+import { cookies } from "next/headers";
 
 export const {
   handler,
@@ -14,3 +15,9 @@ export const {
   // Optional, defaults to "/api/auth"
   basePath: "/custom/auth/path",
 });
+
+export async function getAuthToken() {
+  const cookieStore = await cookies();
+  // Read the JWT directly from the browser's cookies
+  return cookieStore.get("better-auth.convex_jwt")?.value;
+}
