@@ -32,6 +32,35 @@ export const getTasksBySubject = query({
     return await ctx.db
       .query("tasks")
       .withIndex("by_subject", (q) => q.eq("subjectId", args.subjectId))
+      .order("desc")
       .collect();
+  },
+});
+
+export const toggleTaskStatus = mutation({
+  args: { taskId: v.id("tasks") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new ConvexError("Not authenticated");
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task || task.user !== user._id) throw new ConvexError("Task not found");
+
+    await ctx.db.patch(args.taskId, {
+      status: task.status === "pending" ? "completed" : "pending",
+    });
+  },
+});
+
+export const deleteTask = mutation({
+  args: { taskId: v.id("tasks") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new ConvexError("Not authenticated");
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task || task.user !== user._id) throw new ConvexError("Task not found");
+
+    await ctx.db.delete(args.taskId);
   },
 });

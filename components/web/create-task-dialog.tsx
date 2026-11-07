@@ -25,7 +25,38 @@ export default function CreateTaskDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const createTask = useMutation(api.tasks.createTask);
+
+  // 👈 Optimistic Update added here
+  const createTask = useMutation(api.tasks.createTask).withOptimisticUpdate(
+    (localStore, args) => {
+      // 1. Get the current tasks from the cache
+      const currentTasks = localStore.getQuery(api.tasks.getTasksBySubject, { 
+        subjectId: args.subjectId 
+      });
+
+      if (currentTasks !== undefined) {
+        // 2. Create a fake task object
+        const newTask = {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          _id: `temp-${args.title}` as any,
+          _creationTime: 0,
+          title: args.title,
+          dueDate: args.dueDate,
+          subjectId: args.subjectId,
+          user: "temp-user",
+          status: "pending",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+
+        // 3. Push the new task into the cached list instantly
+        localStore.setQuery(
+          api.tasks.getTasksBySubject,
+          { subjectId: args.subjectId },
+          [newTask, ...currentTasks]
+        );
+      }
+    }
+  );
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
@@ -33,28 +64,31 @@ export default function CreateTaskDialog({
   });
 
   async function onSubmit(data: z.infer<typeof taskSchema>) {
-    setIsPending(true);
+    // 1. Close the dialog and reset the form IMMEDIATELY
+    setOpen(false);
+    form.reset();
+
     try {
       // Convert the "YYYY-MM-DD" string into a JavaScript timestamp number
       const timestamp = new Date(data.dueDate).getTime();
       
+      // 2. Send to the backend in the background
       await createTask({ 
         title: data.title, 
         dueDate: timestamp,
         subjectId: subjectId,
       });
       
-      toast.add({ type: "success", description: "Task added successfully" });
-      form.reset();
-      setOpen(false);
+      // Optional: You can still show a success toast here if you want
+      // toast.add({ type: "success", description: "Task added successfully" });
+      
     } catch (error) {
+      // 3. If it fails (e.g., offline), show the error toast
       toast.add({
         type: "error",
         description: error instanceof Error ? error.message : "Failed to add task",
         priority: "high",
       });
-    } finally {
-      setIsPending(false);
     }
   }
 
