@@ -63,3 +63,28 @@ export const getSubjectById = query({
     return subject;
   }
 });
+
+export const deleteSubject = mutation({
+  args: { subjectId: v.id("subjects") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) throw new ConvexError("Not authenticated");
+
+    const subject = await ctx.db.get(args.subjectId);
+    if (!subject || subject.user !== user._id) throw new ConvexError("Subject not found");
+
+    // 1. Find all tasks for this subject
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_subject", (q) => q.eq("subjectId", args.subjectId))
+      .collect();
+
+    // 2. Delete all those tasks
+    for (const task of tasks) {
+      await ctx.db.delete(task._id);
+    }
+
+    // 3. Finally, delete the subject itself
+    await ctx.db.delete(args.subjectId);
+  },
+});

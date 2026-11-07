@@ -10,7 +10,7 @@ import { subjectSchema } from "@/app/schemas/subject";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/toast"; // 👈 Import toast
+import { toast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,31 @@ import {
 export default function CreateSubjectDialog({ children }: { children: React.ReactElement }) {
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const createSubject = useMutation(api.subjects.createSubject);
+
+  // 👈 Optimistic Update added here
+  const createSubject = useMutation(api.subjects.createSubject).withOptimisticUpdate(
+    (localStore, args) => {
+      const currentSubjects = localStore.getQuery(api.subjects.getSubjects, {});
+      
+      if (currentSubjects !== undefined) {
+        // Create a fake subject with a temporary ID
+        const newSubject = {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          _id: `temp-${args.subject}` as any, 
+          _creationTime: 0,
+          subject: args.subject,
+          user: "temp-user", 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+
+        localStore.setQuery(
+          api.subjects.getSubjects,
+          {},
+          [...currentSubjects, newSubject]
+        );
+      }
+    }
+  );
 
   const form = useForm<z.infer<typeof subjectSchema>>({
     resolver: zodResolver(subjectSchema),
@@ -35,8 +59,6 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
     setIsPending(true);
     try {
       await createSubject({ subject: data.subject });
-      
-      // 👈 Success Toast
       toast.add({
         type: "success",
         description: "Subject created successfully",
@@ -45,7 +67,6 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
       form.reset();
       setOpen(false); // Close dialog on success
     } catch (error) {
-      // 👈 Error Toast
       toast.add({
         type: "error",
         description: error instanceof Error ? error.message : "Failed to create subject",
@@ -59,7 +80,6 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       
-      {/* 👈 Fixed: Self-closing tag */}
       <DialogTrigger render={children} />
       
       <DialogContent>
