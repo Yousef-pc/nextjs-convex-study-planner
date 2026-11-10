@@ -12,9 +12,15 @@ export const createTask = mutation({
     const user = await authComponent.safeGetAuthUser(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
+    // Verify the user owns the subject they are adding a task to
+    const subject = await ctx.db.get(args.subjectId);
+    if (!subject || subject.user !== user._id) {
+      throw new ConvexError("Subject not found or unauthorized");
+    }
+
     return await ctx.db.insert("tasks", {
       title: args.title,
-      status: "pending", // Default status
+      status: "pending", 
       dueDate: args.dueDate,
       subjectId: args.subjectId,
       user: user._id,
@@ -28,7 +34,10 @@ export const getTasksBySubject = query({
     const user = await authComponent.safeGetAuthUser(ctx);
     if (!user) return [];
 
-    // Fetch tasks for this subject, sorted by due date
+    // Verify the user owns the subject before returning tasks
+    const subject = await ctx.db.get(args.subjectId);
+    if (!subject || subject.user !== user._id) return [];
+
     return await ctx.db
       .query("tasks")
       .withIndex("by_subject", (q) => q.eq("subjectId", args.subjectId))
@@ -43,8 +52,9 @@ export const toggleTaskStatus = mutation({
     const user = await authComponent.safeGetAuthUser(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
+    // Verify the task belongs to the user
     const task = await ctx.db.get(args.taskId);
-    if (!task || task.user !== user._id) throw new ConvexError("Task not found");
+    if (!task || task.user !== user._id) throw new ConvexError("Task not found or unauthorized");
 
     await ctx.db.patch(args.taskId, {
       status: task.status === "pending" ? "completed" : "pending",
@@ -58,8 +68,9 @@ export const deleteTask = mutation({
     const user = await authComponent.safeGetAuthUser(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
+    // Verify the task belongs to the user
     const task = await ctx.db.get(args.taskId);
-    if (!task || task.user !== user._id) throw new ConvexError("Task not found");
+    if (!task || task.user !== user._id) throw new ConvexError("Task not found or unauthorized");
 
     await ctx.db.delete(args.taskId);
   },
