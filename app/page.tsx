@@ -1,5 +1,5 @@
-import LandingNavbar from "@/components/web/landing-navbar";
-import LandingPage from "@/components/web/landing-page";
+import LandingNavbar from "@/components/web/landing/landing-navbar";
+import LandingPage from "@/components/web/landing/landing-page";
 
 const Home = () => {
   return (

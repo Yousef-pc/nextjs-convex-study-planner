@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/web/theme-toggle";
+import { ThemeToggle } from "@/components/web/dashboard/shared/theme-toggle";
 import { useConvexAuth } from "convex/react";
 
 export default function LandingNavbar() {

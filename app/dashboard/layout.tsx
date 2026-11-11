@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getAuthToken } from "@/lib/auth-server";
-import DashboardNavbar from "@/components/web/dashboard-navbar";
-import { DashboardSidebar } from "@/components/web/dashboard-sidebar";
+import DashboardNavbar from "@/components/web/dashboard/navbar";
+import { DashboardSidebar } from "@/components/web/dashboard/sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export const instant = false;

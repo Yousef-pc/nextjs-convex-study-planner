@@ -4,8 +4,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import { buttonVariants, Button } from "@/components/ui/button";
-import CreateTaskDialog from "@/components/web/create-task-dialog";
-import TaskList from "@/components/web/task-list";
+import CreateTaskDialog from "@/components/web/dashboard/tasks/create-task-dialog";
+import TaskList from "@/components/web/dashboard/tasks/task-list";
 import { getAuthToken } from "@/lib/auth-server";
 
 export const instant = false;

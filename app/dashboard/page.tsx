@@ -1,8 +1,8 @@
 import { getToken } from "@/lib/auth-server"; // 👈 Import this
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import CreateSubjectDialog from "@/components/web/create-subject-dialog";
-import SubjectList from "@/components/web/subject-list";
+import CreateSubjectDialog from "@/components/web/dashboard/subjects/create-subject-dialog";
+import SubjectList from "@/components/web/dashboard/subjects/subject-list";
 
 export const instant = false;
 

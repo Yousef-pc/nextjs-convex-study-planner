@@ -1,6 +1,6 @@
 "use client";
 
-import { ThemeToggle } from "@/components/web/theme-toggle";
+import { ThemeToggle } from "@/components/web/dashboard/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";

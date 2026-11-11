@@ -10,7 +10,7 @@ import { z } from "zod";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "@/components/ui/toast";
-import { ImageUploader } from "@/components/web/image-uploader";
+import { ImageUploader } from "@/components/web/dashboard/settings/image-uploader";
 import { userProfileSchema } from "@/app/schemas/user";
 import { deleteAccountSchema } from "@/app/schemas/delete-account";
 import { Id } from "@/convex/_generated/dataModel";
@@ -338,7 +338,6 @@ export default function SettingsPage() {
           </form>
         </AlertDialogContent>
       </AlertDialog>
-
     </div>
   );
 }
