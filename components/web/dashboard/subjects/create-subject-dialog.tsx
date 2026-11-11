@@ -17,15 +17,18 @@ import {
 
 export default function CreateSubjectDialog({ children }: { children: React.ReactElement }) {
   const [open, setOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
 
-  // 1. Add the Optimistic Update
   const createSubject = useMutation(api.subjects.createSubject).withOptimisticUpdate(
     (localStore, args) => {
       const currentSubjects = localStore.getQuery(api.subjects.getSubjects, {});
       
       if (currentSubjects !== undefined) {
-        // Create a fake subject instantly
+        const isDuplicate = currentSubjects.some(
+          (s) => s.subject.toLowerCase() === args.subject.toLowerCase()
+        );
+
+        if (isDuplicate) return; 
+
         const newSubject = {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           _id: `temp-${args.subject}` as any, 
@@ -38,7 +41,7 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
         localStore.setQuery(
           api.subjects.getSubjects,
           {},
-          [...currentSubjects, newSubject]
+          [newSubject, ...currentSubjects] 
         );
       }
     }
@@ -50,25 +53,24 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
   });
 
   async function onSubmit(data: z.infer<typeof subjectSchema>) {
-    // 2. INSTANT FEEDBACK: Close dialog and reset form BEFORE the network request
     setOpen(false);
     form.reset();
-    setIsPending(true);
 
     try {
-      // 3. Send to backend in the background
       await createSubject({ subject: data.subject });
-      toast.add({ type: "success", description: "Subject created successfully" });
+      toast.add({ 
+        type: "success", 
+        title: "Success", // Added title
+        description: "Subject created successfully" 
+      });
     } catch (error) {
-      // 4. If it fails (e.g., duplicate name), show the error toast
+      // HARDCODED error message for debugging
       toast.add({
         type: "error",
-        description: error instanceof Error ? error.message : "Failed to create subject",
-        priority: "high",
+        title: "Error", // Added title
+        description: "You already have a subject with this name.",
       });
-    } finally {
-      setIsPending(false);
-    }
+    } 
   }
 
   return (
@@ -98,7 +100,6 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
           />
 
           <DialogFooter>
-            {/* The button text doesn't need isPending anymore because the dialog closes instantly! */}
             <Button type="submit" className="w-full">
               Create Subject
             </Button>

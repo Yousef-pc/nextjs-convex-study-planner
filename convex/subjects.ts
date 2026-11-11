@@ -53,6 +53,7 @@ export const getSubjects = query({
     return await ctx.db
       .query("subjects")
       .withIndex("by_user", (q) => q.eq("user", user._id))
+      .order("desc") // Newest subjects first
       .collect();
   },
 });
