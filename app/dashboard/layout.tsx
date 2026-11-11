@@ -4,6 +4,7 @@ import { getAuthToken } from "@/lib/auth-server";
 import DashboardNavbar from "@/components/web/dashboard/navbar";
 import { DashboardSidebar } from "@/components/web/dashboard/sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/toast";
 
 export const instant = false;
 
@@ -21,6 +22,7 @@ const DashboardLayout = async ({ children }: { children: ReactNode }) => {
         <main className="flex-1 max-w-5xl w-full mx-auto p-8">
           {children}
         </main>
+        <Toaster />
       </SidebarInset>
     </SidebarProvider>
   );
