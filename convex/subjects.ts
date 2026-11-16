@@ -38,6 +38,7 @@ export const createSubject = mutation({
     const subjectId = await ctx.db.insert("subjects", {
       subject: trimmedSubject,
       user: user._id,
+      pluginSlug: "study-planner",
     });
 
     return subjectId;

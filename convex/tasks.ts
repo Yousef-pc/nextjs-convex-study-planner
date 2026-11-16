@@ -24,6 +24,7 @@ export const createTask = mutation({
       dueDate: args.dueDate,
       subjectId: args.subjectId,
       user: user._id,
+      pluginSlug: "study-planner",
     });
   },
 });
