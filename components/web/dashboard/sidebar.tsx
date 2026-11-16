@@ -21,7 +21,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 const items = [
-  { title: "My Subjects", url: "/dashboard", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Marketplace", url: "/dashboard/marketplace", icon: Store },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
