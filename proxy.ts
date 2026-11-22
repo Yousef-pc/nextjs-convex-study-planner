@@ -2,17 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
 export async function proxy(request: NextRequest) {
-  const sessionCookie = getSessionCookie(request);
+  // 1. Set the current pathname in the headers
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
 
-  // Optimistic check: If there is no session cookie, kick them to login immediately
-  if (!sessionCookie) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+  // 2. Optimistic check: If not marketplace, check for cookie
+  if (!request.nextUrl.pathname.startsWith("/dashboard/marketplace")) {
+    const sessionCookie = getSessionCookie(request);
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
   }
 
-  return NextResponse.next();
+  // 3. Pass the headers forward
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
-  // Protect the dashboard and its sub-routes
   matcher: ["/dashboard/:path*"], 
 };

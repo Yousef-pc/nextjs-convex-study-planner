@@ -6,9 +6,14 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import Link from "next/link"; // 👈 Import Link
+import Link from "next/link";
 
-const DashboardNavbar = () => {
+// 1. Define the props to accept the auth state
+interface DashboardNavbarProps {
+  isAuthenticated?: boolean;
+}
+
+const DashboardNavbar = ({ isAuthenticated = true }: DashboardNavbarProps) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -32,9 +37,9 @@ const DashboardNavbar = () => {
     <header className="flex h-16 items-center justify-between px-6 border-b bg-background">
       
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="md:hidden" /> 
+        {/* 2. Only show the mobile sidebar toggle if the user is logged in */}
+        {isAuthenticated && <SidebarTrigger className="md:hidden" />} 
         
-        {/* 👈 The Logo is now here, on the left side of the Navbar */}
         <Link href="/" className="flex items-center">
           <span className="text-2xl font-bold">
             Study<span className="text-primary">Pro</span>
@@ -43,9 +48,17 @@ const DashboardNavbar = () => {
       </div>
 
       <div className="flex gap-3 items-center">
-        <Button variant="default" onClick={handleLogout}>
-          Logout
-        </Button>
+        {/* 3. Conditional rendering for the Auth Button */}
+        {isAuthenticated ? (
+          <Button variant="default" onClick={handleLogout}>
+            Logout
+          </Button>
+        ) : (
+          // We use the Shadcn Base UI `render` prop to make this a Link that looks like a button
+          <Button variant="default" render={<Link href="/auth/login" />}>
+            Sign In
+          </Button>
+        )}
         <ThemeToggle />
       </div>
     </header>
