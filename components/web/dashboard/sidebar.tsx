@@ -72,7 +72,7 @@ export function DashboardSidebar() {
               <div className="flex items-center gap-3 overflow-hidden">
                 <Avatar className="size-10 border-gray border-2 shadow-sm">
                   <AvatarImage
-                    src={imageUrl || `https://avatar.vercel.sh/${user._id}`} 
+                    src={imageUrl || `https://avatar.vercel.sh/${user._id}`}
                     alt={user.name}
                   />
                   <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>

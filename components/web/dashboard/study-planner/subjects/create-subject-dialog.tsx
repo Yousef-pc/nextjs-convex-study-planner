@@ -15,7 +15,14 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 
-export default function CreateSubjectDialog({ children }: { children: React.ReactElement }) {
+// 1. Add the new prop to the type definition
+interface CreateSubjectDialogProps {
+  children: React.ReactElement;
+  onSubjectCreated?: (newId: string) => void;
+}
+
+// 2. Accept the new prop
+export default function CreateSubjectDialog({ children, onSubjectCreated }: CreateSubjectDialogProps) {
   const [open, setOpen] = useState(false);
 
   const createSubject = useMutation(api.subjects.createSubject).withOptimisticUpdate(
@@ -35,6 +42,7 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
           _creationTime: 0,
           subject: args.subject,
           user: "temp-user", 
+          pluginSlug: "study-planner",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
 
@@ -57,17 +65,24 @@ export default function CreateSubjectDialog({ children }: { children: React.Reac
     form.reset();
 
     try {
-      await createSubject({ subject: data.subject });
+      // 3. Capture the ID returned from the backend
+      const newId = await createSubject({ subject: data.subject });
+      
       toast.add({ 
         type: "success", 
-        title: "Success", // Added title
+        title: "Success", 
         description: "Subject created successfully" 
       });
+
+      // 4. Tell the parent component! 
+      // We check if the function exists before calling it.
+      if (onSubjectCreated && newId) {
+        onSubjectCreated(newId);
+      }
     } catch (error) {
-      // HARDCODED error message for debugging
       toast.add({
         type: "error",
-        title: "Error", // Added title
+        title: "Error", 
         description: "You already have a subject with this name.",
       });
     } 
