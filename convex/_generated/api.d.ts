@@ -9,11 +9,13 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as comments from "../comments.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as plugins from "../plugins.js";
 import type * as plugins_cleanup from "../plugins/cleanup.js";
 import type * as plugins_seedData from "../plugins/seedData.js";
+import type * as smartImport from "../smartImport.js";
 import type * as subjects from "../subjects.js";
 import type * as tasks from "../tasks.js";
 import type * as userPlugins from "../userPlugins.js";
@@ -28,11 +30,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  comments: typeof comments;
   files: typeof files;
   http: typeof http;
   plugins: typeof plugins;
   "plugins/cleanup": typeof plugins_cleanup;
   "plugins/seedData": typeof plugins_seedData;
+  smartImport: typeof smartImport;
   subjects: typeof subjects;
   tasks: typeof tasks;
   userPlugins: typeof userPlugins;

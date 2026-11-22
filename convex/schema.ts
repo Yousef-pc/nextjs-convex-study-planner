@@ -9,7 +9,9 @@ export default defineSchema({
     description: v.string(),    // e.g., "Track your subjects and tasks"
     installs: v.number(),       // The download counter
     isDefault: v.boolean(),     // True for the Study Planner
+    imageUrl: v.string(),
   }).index("by_slug", ["slug"]),
+
 
   // 2. The Mapping of User -> Plugins (What they installed)
   userPlugins: defineTable({
@@ -46,4 +48,12 @@ export default defineSchema({
     examples: v.array(v.string()),
     userId: v.string(),
   }).index("by_user", ["userId"]),
+
+  comments: defineTable({
+    pluginId: v.id("plugins"), // Links to the specific plugin
+    userId: v.string(),        // Links to the user who wrote it
+    userName: v.string(),      // Denormalized for fast loading
+    userImage: v.optional(v.string()),
+    text: v.string(),
+  }).index("by_plugin", ["pluginId"]), // Makes fetching instant
 });
