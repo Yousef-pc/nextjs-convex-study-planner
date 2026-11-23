@@ -1,35 +1,29 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DescriptionRenderer } from "./description-renderer";
-import { PluginInstallButton } from "./plugin-install-button"; // Client
-import { CommentForm } from "./comment-form"; // Client
-import { CommentsList } from "./comments-list"; // Mostly Static
+import { PluginInstallButton } from "./plugin-install-button";
+import { CommentsSection } from "./comments-section";
 
-// 👈 Function to get cached data
-async function getCachedData(slug: string) {
+async function getCachedPlugin(slug: string) {
   "use cache";
-  cacheLife("days");
+  cacheLife({ 
+    stale: 300, 
+    revalidate: 300, 
+    expire: 3600 
+  });
   cacheTag(`plugin-${slug}`);
 
-  const plugin = await fetchQuery(api.plugins.getPluginBySlug, { slug });
-  if (!plugin) return { plugin: null, comments: [] };
-
-  const comments = await fetchQuery(api.comments.getComments, { pluginId: plugin._id });
-  cacheTag(`comments-${plugin._id}`); // Tag comments separately for invalidation
-
-  return { plugin, comments };
+  return await fetchQuery(api.plugins.getPluginBySlug, { slug });
 }
 
-// 👈 Note: We need to pass isGuest from the server layout or use a trick.
-// For now, we'll let the client islands handle their own auth checks!
 export async function PluginDetailPage({ pluginSlug }: { pluginSlug: string }) {
-  const { plugin, comments } = await getCachedData(pluginSlug);
+  const plugin = await getCachedPlugin(pluginSlug);
 
   if (!plugin) {
     return (
@@ -65,7 +59,6 @@ export async function PluginDetailPage({ pluginSlug }: { pluginSlug: string }) {
           <h1 className="text-4xl font-bold tracking-tight mb-2">{plugin.name}</h1>
         </div>
         <div className="shrink-0 mt-4 md:mt-0">
-          {/* 👈 Client Island 1: Install Button */}
           <PluginInstallButton 
             pluginSlug={plugin.slug} 
             pluginName={plugin.name} 
@@ -82,24 +75,15 @@ export async function PluginDetailPage({ pluginSlug }: { pluginSlug: string }) {
       </div>
 
       <div className="mt-12">
-        <Card className="bg-muted/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <MessageSquare className="size-5" /> {comments.length} {comments.length === 1 ? "Comment" : "Comments"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            
-            {/* 👈 Client Island 2: Comment Form (Passes isGuest from a client hook) */}
-            <CommentForm pluginId={plugin._id} isGuest={false} /> 
-            
-            <hr className="border-border" />
-
-            {/* 👈 Static List (Cached Data) */}
-            <CommentsList comments={comments} pluginId={plugin._id} />
-            
-          </CardContent>
-        </Card>
+        <Suspense 
+          fallback={
+            <div className="flex justify-center items-center h-40 border border-dashed rounded-xl">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          }
+        >
+          <CommentsSection pluginId={plugin._id} />
+        </Suspense>
       </div>
     </div>
   );
