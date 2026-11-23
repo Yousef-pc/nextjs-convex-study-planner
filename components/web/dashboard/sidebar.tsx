@@ -37,7 +37,7 @@ export function DashboardSidebar() {
       : "skip"
   );
 
-  // 👈 1. If loading, show the Sidebar skeleton
+  // 👈 1. The new Fully-Loaded Skeleton State
   if (user === undefined) {
     return (
       <Sidebar className="[&>div]:bg-background">
@@ -46,13 +46,38 @@ export function DashboardSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <Skeleton className="size-8 rounded-full" />
+                  {/* Skeleton matches the size-10 Avatar */}
+                  <Skeleton className="size-10 rounded-full border-gray border-2 shadow-sm" />
                   <Skeleton className="h-4 w-24" />
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
+
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>
+              {/* Skeleton for the "Application" text */}
+              <Skeleton className="h-3 w-20" />
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {/* Skeletons for the 3 Nav items */}
+                {[...Array(3)].map((_, i) => (
+                  <SidebarMenuItem key={i}>
+                    <SidebarMenuButton disabled>
+                      {/* Skeleton for the Icon */}
+                      <Skeleton className="size-4" />
+                      {/* Skeleton for the Title */}
+                      <Skeleton className="h-4 w-24" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
       </Sidebar>
     );
   }
