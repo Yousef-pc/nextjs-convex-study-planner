@@ -1,8 +1,8 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api"; // Import internal
 import { DataModel } from "./_generated/dataModel";
-import { query } from "./_generated/server";
+import { query, MutationCtx } from "./_generated/server"; // Import MutationCtx
 import { betterAuth } from "better-auth/minimal";
 import authConfig from "./auth.config";
 
@@ -19,11 +19,9 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
       enabled: true,
       requireEmailVerification: false,
     },
-    // Bypass the 24-hour freshness check for deletion
     session: {
       freshAge: 0, 
     },
-    // Allow users to delete their own accounts
     user: {
       deleteUser: {
         enabled: true,
@@ -32,8 +30,24 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
     plugins: [
       convex({ authConfig }),
     ],
-  })
-}
+    
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            // Better Auth hooks run inside a mutation, so we can safely cast ctx
+            const mutationCtx = ctx as MutationCtx;
+            
+            // Trigger our Convex internal mutation!
+            await mutationCtx.runMutation(internal.userPlugins.initializeDefaultPlugin, {
+              userId: user.id,
+            });
+          },
+        },
+      },
+    },
+  });
+};
 
 export const getCurrentUser = query({
   args: {},

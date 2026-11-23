@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation  } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { authComponent } from "./auth";
 import { pluginCleanups } from "./plugins/cleanup";
@@ -140,5 +140,34 @@ export const setActivePlugin = mutation({
     if (targetPlugin) {
       await ctx.db.patch(targetPlugin._id, { isActive: true });
     }
+  },
+});
+
+export const initializeDefaultPlugin = internalMutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const defaultSlug = "study-planner";
+    
+    // 1. Find the Study Planner plugin
+    const plugin = await ctx.db
+      .query("plugins")
+      .withIndex("by_slug", (q) => q.eq("slug", defaultSlug))
+      .first();
+
+    if (!plugin) {
+      console.error("Default plugin 'study-planner' not found in database!");
+      return;
+    }
+
+    // 2. Increment the installs counter
+    await ctx.db.patch(plugin._id, { installs: plugin.installs + 1 });
+
+    // 3. Link the new user to the plugin (auto-install)
+    await ctx.db.insert("userPlugins", {
+      userId: args.userId,
+      pluginSlug: defaultSlug,
+      customName: plugin.name,
+      isActive: true, // Make it active by default so they land on it
+    });
   },
 });
