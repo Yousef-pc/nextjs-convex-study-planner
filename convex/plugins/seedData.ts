@@ -15,7 +15,7 @@ export const pluginsToSeed = [
     ]
   }
 }
-[Important: The date MUST be in YYYY-MM-DD format. If the subject already exists, the new tasks will be added to it automatically. If the array is empty, only the subject is created.]
+[Important: The date MUST be in YYYY-MM-DD format. If the subject already exists, the new tasks will be added to it automatically. If the array is empty, only the subject is created. LIMITS: You can create a maximum of 50 NEW subjects and add a maximum of 500 tasks per single import.]
 `,
     installs: 1,
     isDefault: true,
@@ -40,7 +40,7 @@ export const pluginsToSeed = [
     }
   ]
 }
-[Note: You must paste an array [] of words. The "examples" field is optional. If you leave the examples array empty, the word will still be imported successfully.]
+[Note: You must paste an array [] of words. The "examples" field is optional. LIMITS: You can import a maximum of 200 words and a maximum of 1000 examples per single import (maximum 5 examples per word).]
 `,
     installs: 0,
     isDefault: false,

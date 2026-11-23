@@ -2,8 +2,7 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { authComponent } from "./auth";
-import { studyPlannerImportSchema } from "../app/schemas/smartImport";
-import { wordBankImportSchema } from "../app/schemas/smartImport";
+import { studyPlannerImportSchema, wordBankImportSchema } from "../app/schemas/smartImport";
 
 export const importStudyData = mutation({
   args: {
@@ -21,7 +20,6 @@ export const importStudyData = mutation({
     const user = await authComponent.safeGetAuthUser(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
-    // 1. Backend Validation (Security)
     const parsed = studyPlannerImportSchema.safeParse(args.data);
     if (!parsed.success) {
       throw new ConvexError(parsed.error.issues[0].message);
@@ -29,12 +27,7 @@ export const importStudyData = mutation({
 
     const validData = parsed.data;
     
-    // 👈 Track IDs for the frontend UI indicators
-    const createdSubjectIds: string[] = [];
-    const updatedSubjectIds: string[] = [];
-    let newTasksCount = 0;
-
-    // 2. Fetch existing subjects
+    // 1. Fetch existing subjects
     const existingSubjects = await ctx.db
       .query("subjects")
       .withIndex("by_user", (q) => q.eq("user", user._id))
@@ -44,7 +37,29 @@ export const importStudyData = mutation({
       existingSubjects.map((s) => [s.subject.toLowerCase(), s._id])
     );
 
-    // 3. Loop through data
+    // 2. 👈 PRE-CALCULATE LIMITS (Before any DB writes)
+    let potentialNewSubjects = 0;
+    let totalTasks = 0;
+
+    for (const [subjectName, tasks] of Object.entries(validData)) {
+      totalTasks += tasks.length;
+      if (!subjectMap.has(subjectName.toLowerCase())) {
+        potentialNewSubjects++;
+      }
+    }
+
+    if (potentialNewSubjects > 50) {
+      throw new ConvexError(`Import rejected: Cannot create more than 50 new subjects at once. (You tried to create ${potentialNewSubjects}).`);
+    }
+    if (totalTasks > 500) {
+      throw new ConvexError(`Import rejected: Cannot add more than 500 tasks at once. (You tried to add ${totalTasks}).`);
+    }
+
+    // 3. Loop through and insert
+    const createdSubjectIds: string[] = [];
+    const updatedSubjectIds: string[] = [];
+    let newTasksCount = 0;
+
     for (const [subjectName, tasks] of Object.entries(validData)) {
       const normalizedName = subjectName.toLowerCase();
       let subjectId = subjectMap.get(normalizedName);
@@ -56,17 +71,13 @@ export const importStudyData = mutation({
           pluginSlug: "study-planner",
         });
         subjectMap.set(normalizedName, subjectId);
-        
-        // 👈 Add to new subjects list
         createdSubjectIds.push(subjectId); 
       } else if (tasks.length > 0) {
-        // 👈 If the subject exists AND we are adding tasks to it, mark as updated
         updatedSubjectIds.push(subjectId);
       }
 
       for (const task of tasks) {
         const timestamp = new Date(task.dueDate).getTime();
-
         await ctx.db.insert("tasks", {
           title: task.task,
           status: "pending",
@@ -79,7 +90,6 @@ export const importStudyData = mutation({
       }
     }
 
-    // 👈 Return the IDs so the frontend can show the dots
     return { createdSubjectIds, updatedSubjectIds, newTasksCount };
   },
 });
@@ -98,16 +108,24 @@ export const importWordBankData = mutation({
     const user = await authComponent.safeGetAuthUser(ctx);
     if (!user) throw new ConvexError("Not authenticated");
 
-    // 1. Backend Validation (Security)
     const parsed = wordBankImportSchema.safeParse(args.data);
     if (!parsed.success) {
       throw new ConvexError(parsed.error.issues[0].message);
     }
 
-    // 2. Insert into database
+    // 👈 PRE-CALCULATE LIMITS
+    let totalExamples = 0;
+    for (const item of parsed.data) {
+      totalExamples += item.examples.length;
+    }
+    
+    // Zod already ensures max 200 words, but we check total examples here
+    if (totalExamples > 1000) {
+      throw new ConvexError(`Import rejected: Cannot add more than 1000 examples at once. (You tried to add ${totalExamples}).`);
+    }
+
     let newWordsCount = 0;
     for (const item of parsed.data) {
-      // Filter out empty strings from examples just in case
       const cleanExamples = item.examples.filter((e) => e.trim() !== "");
 
       await ctx.db.insert("words", {
