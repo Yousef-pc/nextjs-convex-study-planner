@@ -1,19 +1,13 @@
 import Link from "next/link";
 import { Doc } from "@/convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Puzzle } from "lucide-react";
-import { MarketplaceCardButton } from "./marketplace-card-button"; // 👈 Updated import name
+import { Puzzle } from "lucide-react";
+import { MarketplaceCardButton } from "./marketplace-card-button";
+import { MarketplaceCardInstalls } from "./marketplace-card-installs";
 
 interface MarketplaceCardProps {
   plugin: Doc<"plugins">;
 }
-
-const formatInstalls = (num: number) => {
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(num);
-};
 
 export function MarketplaceCard({ plugin }: MarketplaceCardProps) {
   const detailHref = `/dashboard/marketplace/${plugin.slug}`;
@@ -39,14 +33,11 @@ export function MarketplaceCard({ plugin }: MarketplaceCardProps) {
       </CardHeader>
 
       <CardContent className="flex-1">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Download className="size-4" />
-          <span>{formatInstalls(plugin.installs)} installs</span>
-        </div>
+        {/* Render the live installs island */}
+        <MarketplaceCardInstalls slug={plugin.slug} />
       </CardContent>
 
       <CardFooter>
-        {/* 👈 The Client Island */}
         <MarketplaceCardButton 
           pluginSlug={plugin.slug} 
           pluginName={plugin.name} 

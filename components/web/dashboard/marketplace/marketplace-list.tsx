@@ -1,11 +1,17 @@
 import { cacheLife } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
-import { MarketplaceCard } from "@/components/web/dashboard/marketplace/marketplace-card"; // 👈 Updated import
+import { MarketplaceCard } from "@/components/web/dashboard/marketplace/marketplace-card";
 
 export async function MarketplaceList() {
   "use cache";
-  cacheLife("hours"); 
+  
+  // 👈 Time-based caching: refresh every 5 minutes (300 seconds)
+  cacheLife({ 
+    stale: 300, 
+    revalidate: 300, 
+    expire: 3600 
+  }); 
 
   const plugins = await fetchQuery(api.plugins.getAllPlugins);
 
