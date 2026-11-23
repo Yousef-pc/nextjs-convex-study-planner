@@ -2,15 +2,20 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { authComponent } from "./auth";
+import { paginationOptsValidator } from "convex/server"; // 👈 Import pagination validator
 
-export const getComments = query({
-  args: { pluginId: v.id("plugins") },
+// Replaced getComments with getPaginatedComments
+export const getPaginatedComments = query({
+  args: { 
+    pluginId: v.id("plugins"),
+    paginationOpts: paginationOptsValidator, 
+  },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("comments")
       .withIndex("by_plugin", (q) => q.eq("pluginId", args.pluginId))
-      .order("desc") // Newest comments first
-      .collect();
+      .order("desc") // Newest first
+      .paginate(args.paginationOpts); // Use paginate instead of collect
   },
 });
 
@@ -30,7 +35,7 @@ export const addComment = mutation({
     await ctx.db.insert("comments", {
       pluginId: args.pluginId,
       userId: user._id,
-      userName: user.name || "Anonymous User", // Fallback if no name
+      userName: user.name || "Anonymous User",
       userImage: user.image || undefined,
       text: trimmedText,
     });
@@ -46,7 +51,6 @@ export const deleteComment = mutation({
     const comment = await ctx.db.get(args.commentId);
     if (!comment) throw new ConvexError("Comment not found");
 
-    // SECURITY CHECK: Ensure the user requesting deletion actually owns the comment
     if (comment.userId !== user._id) {
       throw new ConvexError("You can only delete your own comments");
     }
