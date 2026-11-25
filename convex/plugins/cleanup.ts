@@ -1,29 +1,35 @@
 import { MutationCtx } from "../_generated/server";
 
-// 👈 Define the type for a cleanup function
-type CleanupFunction = (ctx: MutationCtx, userId: string) => Promise<void>;
-
-// 👈 The Registry: Maps a plugin slug to its specific cleanup logic
-export const pluginCleanups: Record<string, CleanupFunction> = {
+export const pluginCleanups: Record<
+  string, 
+  (ctx: MutationCtx, userId: string) => Promise<void>
+> = {
   "study-planner": async (ctx, userId) => {
+    // Delete tasks first
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_user", (q) => q.eq("user", userId))
+      .collect();
+    for (const task of tasks) {
+      await ctx.db.delete(task._id);
+    }
+    // Then delete subjects
     const subjects = await ctx.db
       .query("subjects")
       .withIndex("by_user", (q) => q.eq("user", userId))
       .collect();
-    
-    for (const sub of subjects) {
-      const tasks = await ctx.db
-        .query("tasks")
-        .withIndex("by_subject", (q) => q.eq("subjectId", sub._id))
-        .collect();
-      for (const t of tasks) await ctx.db.delete(t._id);
-      await ctx.db.delete(sub._id);
+    for (const subject of subjects) {
+      await ctx.db.delete(subject._id);
     }
   },
-
   "word-bank": async (ctx, userId) => {
-    // 👈 TODO: We will write the word-bank cleanup logic here once we build the Word Bank schema!
-    // Example: Delete all words for this user.
-    console.log("Word bank cleanup logic will go here");
+    // Delete all words for the user
+    const words = await ctx.db
+      .query("words")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    for (const word of words) {
+      await ctx.db.delete(word._id);
+    }
   },
 };

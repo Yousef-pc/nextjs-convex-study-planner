@@ -37,7 +37,7 @@ export const importStudyData = mutation({
       existingSubjects.map((s) => [s.subject.toLowerCase(), s._id])
     );
 
-    // 2. 👈 PRE-CALCULATE LIMITS (Before any DB writes)
+    // 2. PRE-CALCULATE LIMITS (Before any DB writes)
     let potentialNewSubjects = 0;
     let totalTasks = 0;
 
@@ -113,7 +113,7 @@ export const importWordBankData = mutation({
       throw new ConvexError(parsed.error.issues[0].message);
     }
 
-    // 👈 PRE-CALCULATE LIMITS
+    // PRE-CALCULATE LIMITS
     let totalExamples = 0;
     for (const item of parsed.data) {
       totalExamples += item.examples.length;
