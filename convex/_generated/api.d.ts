@@ -18,6 +18,7 @@ import type * as plugins_seedData from "../plugins/seedData.js";
 import type * as smartImport from "../smartImport.js";
 import type * as subjects from "../subjects.js";
 import type * as tasks from "../tasks.js";
+import type * as tests_testUtils from "../tests/testUtils.js";
 import type * as userPlugins from "../userPlugins.js";
 import type * as users from "../users.js";
 import type * as words from "../words.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   smartImport: typeof smartImport;
   subjects: typeof subjects;
   tasks: typeof tasks;
+  "tests/testUtils": typeof tests_testUtils;
   userPlugins: typeof userPlugins;
   users: typeof users;
   words: typeof words;

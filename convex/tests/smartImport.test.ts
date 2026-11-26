@@ -1,67 +1,7 @@
 
-import { convexTest } from "convex-test";
 import { describe, it, expect } from "vitest";
 import { api } from "../_generated/api";
-import schema from "../schema";
-import { register } from "@convex-dev/better-auth/test";
-
-const modules = (
-  import.meta as ImportMeta & {
-    glob: (pattern: string) => Record<string, () => Promise<unknown>>;
-  }
-).glob("../**/*.ts");
-
-// Creates a test instance with a valid Better Auth user and session.
-const createAuthenticatedTest = async () => {
-  const t = convexTest(schema, modules);
-
-  // Register the Better Auth component.
-  const betterAuth = register(t);
-
-  const now = Date.now();
-
-  // Seed a user and an active session in the Better Auth component.
-  const { user, session } = await t.run(async (ctx) => {
-    const user = await ctx.runMutation(betterAuth.adapter.create, {
-      input: {
-        model: "user",
-        data: {
-          name: "Test User",
-          email: "test@example.com",
-          emailVerified: true,
-          createdAt: now,
-          updatedAt: now,
-        },
-      },
-    });
-
-    const session = await ctx.runMutation(betterAuth.adapter.create, {
-      input: {
-        model: "session",
-        data: {
-          expiresAt: now + 60 * 60 * 1000,
-          token: "test-session-token",
-          createdAt: now,
-          updatedAt: now,
-          userId: user._id,
-        },
-      },
-    });
-
-    return { user, session };
-  });
-
-  // Better Auth's Convex JWT contains both subject and sessionId.
-  // We reproduce those claims in the test identity.
-  const asUser = t.withIdentity({
-    issuer: "https://test.example",
-    subject: user._id,
-    tokenIdentifier: `https://test.example|${user._id}`,
-    sessionId: session._id,
-  } as Parameters<typeof t.withIdentity>[0]);
-
-  return { t, asUser };
-};
+import { createAuthenticatedTest } from "./testUtils";
 
 const getFutureDate = () =>
   new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)

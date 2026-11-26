@@ -1,61 +1,10 @@
-import { convexTest } from "convex-test";
+
 import { describe, it, expect } from "vitest";
 import { api } from "../_generated/api";
-import schema from "../schema";
-import { register } from "@convex-dev/better-auth/test";
-
-const modules = (
-  import.meta as ImportMeta & {
-    glob: (pattern: string) => Record<string, () => Promise<unknown>>;
-  }
-).glob("../**/*.ts");
-
-// Creates a test instance with a valid Better Auth user and session.
-const createAuthenticatedTest = async () => {
-  const t = convexTest(schema, modules);
-
-  const betterAuth = register(t);
-  const now = Date.now();
-
-  const { user, session } = await t.run(async (ctx) => {
-    const user = await ctx.runMutation(betterAuth.adapter.create, {
-      input: {
-        model: "user",
-        data: {
-          name: "Test User",
-          email: "test@example.com",
-          emailVerified: true,
-          createdAt: now,
-          updatedAt: now,
-        },
-      },
-    });
-
-    const session = await ctx.runMutation(betterAuth.adapter.create, {
-      input: {
-        model: "session",
-        data: {
-          expiresAt: now + 60 * 60 * 1000,
-          token: "test-session-token",
-          createdAt: now,
-          updatedAt: now,
-          userId: user._id,
-        },
-      },
-    });
-
-    return { user, session };
-  });
-
-  const asUser = t.withIdentity({
-    issuer: "https://test.example",
-    subject: user._id,
-    tokenIdentifier: `https://test.example|${user._id}`,
-    sessionId: session._id,
-  } as Parameters<typeof t.withIdentity>[0]);
-
-  return { t, asUser, userId: user._id };
-};
+import {
+  createAuthenticatedTest,
+  createTestInstance,
+} from "./testUtils";
 
 describe("User Data Deletion", () => {
   it("should delete all of the authenticated user's data while preserving other users' data", async () => {
@@ -257,9 +206,7 @@ describe("User Data Deletion", () => {
   });
 
   it("should reject requests from unauthenticated users", async () => {
-    const t = convexTest(schema, modules);
-
-    register(t);
+    const { t } = createTestInstance();
 
     // Seed a record that must remain untouched.
     await t.run(async (ctx) => {
