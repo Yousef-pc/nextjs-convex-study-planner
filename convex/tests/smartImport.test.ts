@@ -1,7 +1,7 @@
 
 import { describe, it, expect } from "vitest";
 import { api } from "../_generated/api";
-import { createAuthenticatedTest } from "./testUtils";
+import { createAuthenticatedTest } from "../../lib/testUtils";
 
 const getFutureDate = () =>
   new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)

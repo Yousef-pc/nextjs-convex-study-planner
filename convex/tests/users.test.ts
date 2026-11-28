@@ -4,7 +4,7 @@ import { api } from "../_generated/api";
 import {
   createAuthenticatedTest,
   createTestInstance,
-} from "./testUtils";
+} from "../../lib/testUtils";
 
 describe("User Data Deletion", () => {
   it("should delete all of the authenticated user's data while preserving other users' data", async () => {

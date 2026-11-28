@@ -1,6 +1,6 @@
 import { convexTest } from "convex-test";
 import { register } from "@convex-dev/better-auth/test";
-import schema from "../schema";
+import schema from "../convex/schema";
 
 // Discover Convex functions for the test environment.
 const modules = (
