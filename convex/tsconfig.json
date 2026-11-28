@@ -23,6 +23,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../lib/testUtils.ts"],
   "exclude": ["./_generated"]
 }
